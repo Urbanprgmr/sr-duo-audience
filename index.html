@@ -39,6 +39,9 @@
     .team strong, .player strong {
       color: #ffcc00;
     }
+    .match strong {
+      color: #ffcc00;
+    }
   </style>
 </head>
 <body>
@@ -67,18 +70,19 @@
       });
       const data = await response.json();
       renderMatches(data.record.matches);
-      renderTotalPointsLeaderboard(data.record.teams);
-      renderPlayerLeaderboard(data.record.teams);
+      renderTotalPointsLeaderboard(data.record.leaderboard.teams);
+      renderPlayerLeaderboard(data.record.leaderboard.players);
     }
 
     function renderMatches(matches) {
       const matchesDiv = document.getElementById('matches');
       matchesDiv.innerHTML = matches.map(match => `
         <div class="match">
-          <strong>${match.team1}</strong> vs <strong>${match.team2}</strong> at ${new Date(match.time).toLocaleString()}
+          <strong>Teams:</strong> ${match.teams.join(', ')}<br>
+          <strong>Time:</strong> ${new Date(match.time).toLocaleString()}
           ${match.result ? `
-            <div>Positions: ${JSON.stringify(match.result.positions)}</div>
-            <div>Kills: ${JSON.stringify(match.result.kills)}</div>
+            <div><strong>Positions:</strong> ${JSON.stringify(match.result.positions)}</div>
+            <div><strong>Kills:</strong> ${JSON.stringify(match.result.kills)}</div>
           ` : '<div>Match not yet ended</div>'}
         </div>
       `).join('');
@@ -94,17 +98,7 @@
       `).join('');
     }
 
-    function renderPlayerLeaderboard(teams) {
-      const players = [];
-      for (const team of teams) {
-        for (const player of team.players) {
-          players.push({
-            name: player,
-            team: team.name,
-            kills: team.kills
-          });
-        }
-      }
+    function renderPlayerLeaderboard(players) {
       const sortedPlayers = players.sort((a, b) => b.kills - a.kills);
       const playerLeaderboardDiv = document.getElementById('playerLeaderboard');
       playerLeaderboardDiv.innerHTML = sortedPlayers.map(player => `
