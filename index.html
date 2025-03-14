@@ -92,8 +92,8 @@
           renderRules(data.record.rules);
           renderAnnouncements(data.record.announcements);
           renderMatches(data.record.matches);
-          renderTotalPointsLeaderboard(data.record.leaderboard.teams);
-          renderPlayerLeaderboard(data.record.leaderboard.players);
+          renderTotalPointsLeaderboard(data.record.teams); // Updated to use teams directly
+          renderPlayerLeaderboard(data.record.teams); // Updated to use teams directly
         } else {
           console.error("No data found in JSON Bin.");
         }
@@ -151,9 +151,9 @@
     function renderTotalPointsLeaderboard(teams) {
       const sortedTeams = teams.sort((a, b) => b.totalPoints - a.totalPoints);
       const leaderboardDiv = document.getElementById('totalPointsLeaderboard');
-      leaderboardDiv.innerHTML = sortedTeams.map(team => `
+      leaderboardDiv.innerHTML = sortedTeams.map((team, index) => `
         <div class="team">
-          <strong>${team.name}</strong> - Rank: ${team.rank}<br>
+          <strong>${team.name}</strong> - Rank: ${index + 1}<br>
           <strong>Total Points:</strong> ${team.totalPoints}<br>
           <strong>Rank Points:</strong> ${team.rankPoints}<br>
           <strong>Kill Points:</strong> ${team.killPoints}<br>
@@ -178,12 +178,22 @@
       `).join('');
     }
 
-    function renderPlayerLeaderboard(players) {
+    function renderPlayerLeaderboard(teams) {
+      const players = [];
+      for (const team of teams) {
+        for (const player of team.players) {
+          players.push({
+            name: player,
+            team: team.name,
+            kills: team.kills
+          });
+        }
+      }
       const sortedPlayers = players.sort((a, b) => b.kills - a.kills);
       const playerLeaderboardDiv = document.getElementById('playerLeaderboard');
-      playerLeaderboardDiv.innerHTML = sortedPlayers.map(player => `
+      playerLeaderboardDiv.innerHTML = sortedPlayers.map((player, index) => `
         <div class="player">
-          <strong>${player.name}</strong> (Team: ${player.team}) - Kills: ${player.kills}, Rank: ${player.rank}
+          <strong>${player.name}</strong> (Team: ${player.team}) - Kills: ${player.kills}, Rank: ${index + 1}
         </div>
       `).join('');
     }
