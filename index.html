@@ -39,8 +39,18 @@
     .team strong, .player strong {
       color: #ffcc00;
     }
-    .match strong {
-      color: #ffcc00;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    th {
+      background: rgba(255, 255, 255, 0.2);
     }
   </style>
 </head>
@@ -70,8 +80,8 @@
       });
       const data = await response.json();
       renderMatches(data.record.matches);
-      renderTotalPointsLeaderboard(data.record.leaderboard.teams);
-      renderPlayerLeaderboard(data.record.leaderboard.players);
+      renderTotalPointsLeaderboard(data.record.teams);
+      renderPlayerLeaderboard(data.record.teams);
     }
 
     function renderMatches(matches) {
@@ -81,8 +91,24 @@
           <strong>Teams:</strong> ${match.teams.join(', ')}<br>
           <strong>Time:</strong> ${new Date(match.time).toLocaleString()}
           ${match.result ? `
-            <div><strong>Positions:</strong> ${JSON.stringify(match.result.positions)}</div>
-            <div><strong>Kills:</strong> ${JSON.stringify(match.result.kills)}</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Team</th>
+                  <th>Position</th>
+                  <th>Kills</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${Object.entries(match.result.positions).map(([teamName, position]) => `
+                  <tr>
+                    <td>${teamName}</td>
+                    <td>${position}</td>
+                    <td>${JSON.stringify(match.result.kills[teamName])}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
           ` : '<div>Match not yet ended</div>'}
         </div>
       `).join('');
@@ -98,12 +124,23 @@
       `).join('');
     }
 
-    function renderPlayerLeaderboard(players) {
+    function renderPlayerLeaderboard(teams) {
+      const players = [];
+      for (const team of teams) {
+        for (const player of team.players) {
+          players.push({
+            name: player,
+            team: team.name,
+            kills: team.kills
+          });
+        }
+      }
       const sortedPlayers = players.sort((a, b) => b.kills - a.kills);
       const playerLeaderboardDiv = document.getElementById('playerLeaderboard');
       playerLeaderboardDiv.innerHTML = sortedPlayers.map(player => `
         <div class="player">
-          <strong>${player.name}</strong> (Team: ${player.team}) - Kills: ${player.kills}
+          <strong>${player.name
+                    <strong>${player.name}</strong> (Team: ${player.team}) - Kills: ${player.kills}
         </div>
       `).join('');
     }
