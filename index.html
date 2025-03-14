@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tournament Leaderboard</title>
+  <title>Tournament Updates</title>
   <style>
     body {
       font-family: 'Arial', sans-serif;
@@ -27,10 +27,10 @@
       color: #ffcc00;
       text-shadow: 2px 2px 4px #000;
     }
-    .leaderboard, .matches, .player-leaderboard {
+    .leaderboard, .matches, .player-leaderboard, .announcements, .rules {
       margin-top: 20px;
     }
-    .team, .match, .player {
+    .team, .match, .player, .announcement, .rule {
       background: rgba(255, 255, 255, 0.1);
       padding: 10px;
       margin: 10px 0;
@@ -56,7 +56,15 @@
 </head>
 <body>
   <div class="container">
-    <h1>Tournament Leaderboard</h1>
+    <h1>Tournament Updates</h1>
+    <div class="rules">
+      <h2>Tournament Rules</h2>
+      <div id="rulesDisplay"></div>
+    </div>
+    <div class="announcements">
+      <h2>Announcements</h2>
+      <div id="announcementsList"></div>
+    </div>
     <div class="matches">
       <h2>Match Details</h2>
       <div id="matches"></div>
@@ -81,15 +89,32 @@
         });
         const data = await response.json();
         if (data.record) {
+          renderRules(data.record.rules);
+          renderAnnouncements(data.record.announcements);
           renderMatches(data.record.matches);
-          renderTotalPointsLeaderboard(data.record.teams);
-          renderPlayerLeaderboard(data.record.teams);
+          renderTotalPointsLeaderboard(data.record.leaderboard.teams);
+          renderPlayerLeaderboard(data.record.leaderboard.players);
         } else {
           console.error("No data found in JSON Bin.");
         }
       } catch (error) {
         console.error("Error fetching data:", error);
       }
+    }
+
+    function renderRules(rules) {
+      const rulesDisplay = document.getElementById('rulesDisplay');
+      rulesDisplay.innerHTML = `<div class="rule">${rules}</div>`;
+    }
+
+    function renderAnnouncements(announcements) {
+      const announcementsList = document.getElementById('announcementsList');
+      announcementsList.innerHTML = announcements.map(announcement => `
+        <div class="announcement">
+          <strong>${new Date(announcement.timestamp).toLocaleString()}</strong><br>
+          ${announcement.message}
+        </div>
+      `).join('');
     }
 
     function renderMatches(matches) {
@@ -128,7 +153,8 @@
       const leaderboardDiv = document.getElementById('totalPointsLeaderboard');
       leaderboardDiv.innerHTML = sortedTeams.map(team => `
         <div class="team">
-          <strong>${team.name}</strong> - Total Points: ${team.totalPoints}<br>
+          <strong>${team.name}</strong> - Rank: ${team.rank}<br>
+          <strong>Total Points:</strong> ${team.totalPoints}<br>
           <strong>Rank Points:</strong> ${team.rankPoints}<br>
           <strong>Kill Points:</strong> ${team.killPoints}<br>
           <strong>Total Kills:</strong> ${team.kills}
@@ -152,22 +178,12 @@
       `).join('');
     }
 
-    function renderPlayerLeaderboard(teams) {
-      const players = [];
-      for (const team of teams) {
-        for (const player of team.players) {
-          players.push({
-            name: player,
-            team: team.name,
-            kills: team.kills
-          });
-        }
-      }
+    function renderPlayerLeaderboard(players) {
       const sortedPlayers = players.sort((a, b) => b.kills - a.kills);
       const playerLeaderboardDiv = document.getElementById('playerLeaderboard');
       playerLeaderboardDiv.innerHTML = sortedPlayers.map(player => `
         <div class="player">
-          <strong>${player.name}</strong> (Team: ${player.team}) - Kills: ${player.kills}
+          <strong>${player.name}</strong> (Team: ${player.team}) - Kills: ${player.kills}, Rank: ${player.rank}
         </div>
       `).join('');
     }
