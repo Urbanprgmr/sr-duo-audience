@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SR Openhouse Duo BR Tournament Live</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #1a1a1a;
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+      background-image: url('https://res.cloudinary.com/dwe3nze5h/image/upload/v1741881741/IMG_0293_lniyia.jpg');
+      background-size: cover;
+      background-position: center;
+    }
+    h1 {
+      text-align: center;
+      font-size: 3rem;
+      color: #ff4757;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      margin-bottom: 20px;
+    }
+    h2 {
+      color: #00b894;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+      margin-bottom: 10px;
+    }
+    .section {
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+    input, button, textarea {
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      margin: 5px;
+      font-size: 1rem;
+    }
+    input, textarea {
+      background-color: #333;
+      color: #fff;
+      border: 1px solid #555;
+      width: 100%;
+    }
+    button {
+      background-color: #00b894;
+      color: #fff;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #00cec9;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background-color: rgba(0, 0, 0, 0.7);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #444;
+    }
+    th {
+      background-color: #00b894;
+      color: #fff;
+    }
+    tr:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    button.delete {
+      background-color: #ff4757;
+    }
+    button.delete:hover {
+      background-color: #ff6b81;
+    }
+  </style>
+</head>
+<body>
+  <h1>SR Openhouse Duo BR Tournament Live</h1>
+
+  <!-- Leaderboard -->
+  <div class="section">
+    <h2>Leaderboard</h2>
+    <table id="leaderboardTable">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Team Name</th>
+          <th>Total Points</th>
+          <th>Qualified</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- Match Results -->
+  <div class="section">
+    <h2>Match Results</h2>
+    <div id="matchResultsDisplay"></div>
+  </div>
+
+  <!-- Match Schedule -->
+  <div class="section">
+    <h2>Match Schedule</h2>
+    <table id="matchScheduleTable">
+      <thead>
+        <tr>
+          <th>Match Name</th>
+          <th>Time (IST)</th>
+          <th>Time (MVT)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- Rules Section -->
+  <div class="section">
+    <h2>Tournament Rules</h2>
+    <div id="rulesDisplay"></div>
+  </div>
+
+  <script>
+    // JSONBin.io Configuration
+    const jsonBinApiKey = '$2a$10$dQjqnLB2i7wOWKDOwzJ0UuOqSwzQWUJSBBRrbHgz4aVkml7rG89wK'; // Replace with your new JSONBin.io API key
+    const jsonBinId = '67d376648561e97a50eb8663'; // Replace with your new JSONBin.io bin ID
+    const jsonBinUrl = `https://api.jsonbin.io/v3/b/${jsonBinId}`;
+
+    // Fetch Data from JSONBin.io
+    async function fetchData() {
+      try {
+        const response = await fetch(jsonBinUrl, {
+          headers: { 'X-Master-Key': jsonBinApiKey },
+        });
+        const data = await response.json();
+        if (data.record) {
+          console.log('Fetched Data:', data.record); // Debugging
+          renderAll(data.record);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    }
+
+    // Render All Data
+    function renderAll(data) {
+      renderLeaderboard(data.teams);
+      renderMatchResults(data.matches);
+      renderMatchSchedule(data.matchSchedule);
+      renderRules(data.rules);
+    }
+
+    // Render Leaderboard
+    function renderLeaderboard(teams) {
+      const tbody = document.querySelector('#leaderboardTable tbody');
+      tbody.innerHTML = teams
+        .sort((a, b) => b.totalPoints - a.totalPoints)
+        .map((team, index) => `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${team.teamName}</td>
+            <td>${team.totalPoints}</td>
+            <td>${index < data.teamsToQualify ? '✅' : ''}</td>
+          </tr>
+        `).join('');
+    }
+
+    // Render Match Results
+    function renderMatchResults(matches) {
+      const matchResultsDisplay = document.getElementById('matchResultsDisplay');
+      matchResultsDisplay.innerHTML = matches.map((match) => `
+        <div>
+          <h3>${match.matchName}</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Team Name</th>
+                <th>Kills</th>
+                <th>Position</th>
+                <th>Points Earned</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${match.results.map(result => `
+                <tr>
+                  <td>${data.teams[result.teamIndex].teamName}</td>
+                  <td>${result.kills}</td>
+                  <td>${result.position}</td>
+                  <td>${result.points}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `).join('');
+    }
+
+    // Render Match Schedule
+    function renderMatchSchedule(matchSchedule) {
+      const tbody = document.querySelector('#matchScheduleTable tbody');
+      tbody.innerHTML = matchSchedule.map((match) => `
+        <tr>
+          <td>${match.matchName}</td>
+          <td>${match.matchTimeIST}</td>
+          <td>${match.matchTimeMVT}</td>
+        </tr>
+      `).join('');
+    }
+
+    // Render Rules
+    function renderRules(rules) {
+      document.getElementById('rulesDisplay').innerText = rules;
+    }
+
+    // Initial Fetch
+    fetchData();
+    setInterval(fetchData, 5000); // Refresh data every 5 seconds
+  </script>
+</body>
+</html>
