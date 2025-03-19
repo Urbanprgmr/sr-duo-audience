@@ -28,7 +28,7 @@
       color: #ffcc00;
       text-shadow: 2px 2px 4px #000;
     }
-    .leaderboard, .matches, .player-leaderboard, .announcements, .rules {
+    .leaderboard, .matches, .player-leaderboard, .announcements, .rules, .teams {
       margin-top: 20px;
     }
     .team, .match, .player, .announcement, .rule {
@@ -59,10 +59,29 @@
     }
     .toggle-buttons button {
       margin: 5px;
-      background: #555;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 25px;
+      background: linear-gradient(45deg, #ff5722, #ff9800);
+      color: white;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    }
+    .toggle-buttons button:hover {
+      background: linear-gradient(45deg, #e64a19, #f57c00);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
+    }
+    .toggle-buttons button:active {
+      transform: translateY(0);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     }
     .toggle-buttons button.active {
-      background: #ff5722;
+      background: linear-gradient(45deg, #4CAF50, #8BC34A);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     }
     .hidden {
       display: none;
@@ -73,8 +92,15 @@
   <div class="container">
     <h1>Tournament Updates</h1>
     <div class="toggle-buttons">
-      <button onclick="toggleSection('rules')">Toggle Rules</button>
-      <button onclick="toggleSection('announcements')">Toggle Announcements</button>
+      <button onclick="toggleSection('rules')">
+        <span class="icon">📜</span> Toggle Rules
+      </button>
+      <button onclick="toggleSection('announcements')">
+        <span class="icon">📢</span> Toggle Announcements
+      </button>
+      <button onclick="toggleSection('teams')">
+        <span class="icon">👥</span> View Teams
+      </button>
     </div>
     <div class="rules hidden" id="rulesSection">
       <h2>Tournament Rules</h2>
@@ -83,6 +109,10 @@
     <div class="announcements hidden" id="announcementsSection">
       <h2>Announcements</h2>
       <div id="announcementsList"></div>
+    </div>
+    <div class="teams hidden" id="teamsSection">
+      <h2>Registered Teams</h2>
+      <div id="teamsList"></div>
     </div>
     <div class="leaderboard">
       <h2>Total Points Leaderboard</h2>
@@ -111,6 +141,7 @@
         if (json.record) {
           renderRules(json.record.rules);
           renderAnnouncements(json.record.announcements);
+          renderTeams(json.record.teams);
           renderTotalPointsLeaderboard(json.record.teams);
           renderPlayerLeaderboard(json.record.teams);
           renderMatchButtons(json.record.matches);
@@ -144,6 +175,18 @@
             ${announcement.message}
           </div>
         `).join('');
+    }
+
+    function renderTeams(teams) {
+      const teamsList = document.getElementById('teamsList');
+      teamsList.innerHTML = teams.map(team => `
+        <div class="team">
+          <strong>${team.name}</strong>
+          <ul>
+            ${team.players.map(player => `<li>${player}</li>`).join('')}
+          </ul>
+        </div>
+      `).join('');
     }
 
     function renderTotalPointsLeaderboard(teams) {
