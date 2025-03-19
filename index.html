@@ -53,30 +53,49 @@
     th {
       background: rgba(255, 255, 255, 0.2);
     }
+    .toggle-buttons {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .toggle-buttons button {
+      margin: 5px;
+      background: #555;
+    }
+    .toggle-buttons button.active {
+      background: #ff5722;
+    }
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Tournament Updates</h1>
-    <div class="rules">
+    <div class="toggle-buttons">
+      <button onclick="toggleSection('rules')">Toggle Rules</button>
+      <button onclick="toggleSection('announcements')">Toggle Announcements</button>
+    </div>
+    <div class="rules hidden" id="rulesSection">
       <h2>Tournament Rules</h2>
       <div id="rulesDisplay"></div>
     </div>
-    <div class="announcements">
+    <div class="announcements hidden" id="announcementsSection">
       <h2>Announcements</h2>
       <div id="announcementsList"></div>
-    </div>
-    <div class="matches">
-      <h2>Match Details</h2>
-      <div id="matches"></div>
     </div>
     <div class="leaderboard">
       <h2>Total Points Leaderboard</h2>
       <div id="totalPointsLeaderboard"></div>
     </div>
-    <div class="player-leaderboard">
+    <div class="player-leaderboard hidden" id="playerLeaderboardSection">
       <h2>Player Leaderboard</h2>
       <div id="playerLeaderboard"></div>
+    </div>
+    <div class="matches">
+      <h2>Match Details</h2>
+      <div id="matchButtons"></div>
+      <div id="matchDetails"></div>
     </div>
   </div>
   <script>
@@ -92,13 +111,18 @@
         if (json.record) {
           renderRules(json.record.rules);
           renderAnnouncements(json.record.announcements);
-          renderMatches(json.record.matches);
           renderTotalPointsLeaderboard(json.record.teams);
           renderPlayerLeaderboard(json.record.teams);
+          renderMatchButtons(json.record.matches);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
       }
+    }
+
+    function toggleSection(section) {
+      const sectionElement = document.getElementById(section + 'Section');
+      sectionElement.classList.toggle('hidden');
     }
 
     function renderRules(rules) {
@@ -122,67 +146,31 @@
         `).join('');
     }
 
-    function renderMatches(matches) {
-      const matchesDiv = document.getElementById('matches');
-      matchesDiv.innerHTML = matches
-        .filter(match => match.visible)
-        .map(match => `
-          <div class="match">
-            <strong>Match Name:</strong> ${match.name}<br>
-            <strong>Teams:</strong> ${match.teams.join(', ')}<br>
-            <strong>Time:</strong> ${new Date(match.time).toLocaleString()}
-            ${match.result ? `
-              <table>
-                <thead>
-                  <tr>
-                    <th>Team</th>
-                    <th>Position</th>
-                    <th>Kills</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${Object.entries(match.result.positions).map(([teamName, position]) => `
-                    <tr>
-                      <td>${teamName}</td>
-                      <td>${position}</td>
-                      <td>${JSON.stringify(match.result.kills[teamName])}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            ` : '<div>Match not yet ended</div>'}
-          </div>
-        `).join('');
-    }
-
     function renderTotalPointsLeaderboard(teams) {
       const sortedTeams = teams.sort((a, b) => b.totalPoints - a.totalPoints);
       const leaderboardDiv = document.getElementById('totalPointsLeaderboard');
-      leaderboardDiv.innerHTML = sortedTeams.map((team, index) => `
-        <div class="team">
-          <strong>${team.name}</strong> - Rank: ${index + 1}<br>
-          <strong>Total Points:</strong> ${team.totalPoints}<br>
-          <strong>Rank Points:</strong> ${team.rankPoints}<br>
-          <strong>Kill Points:</strong> ${team.killPoints}<br>
-          <strong>Total Kills:</strong> ${team.kills}
-          <table>
-            <thead>
+      leaderboardDiv.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Position</th>
+              <th>Team Name</th>
+              <th>Total Kills</th>
+              <th>Total Points</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${sortedTeams.map((team, index) => `
               <tr>
-                <th>Player</th>
-                <th>Kills</th>
+                <td>${index + 1}</td>
+                <td>${team.name}</td>
+                <td>${team.kills}</td>
+                <td>${team.totalPoints}</td>
               </tr>
-            </thead>
-            <tbody>
-              ${team.players.map((player, i) => `
-                <tr>
-                  <td>${player}</td>
-                  <td>${team.kills}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-      `).join('');
+            `).join('')}
+          </tbody>
+        </table>
+      `;
     }
 
     function renderPlayerLeaderboard(teams) {
@@ -203,6 +191,49 @@
           <strong>${player.name}</strong> (Team: ${player.team}) - Kills: ${player.kills}, Rank: ${index + 1}
         </div>
       `).join('');
+    }
+
+    function renderMatchButtons(matches) {
+      const matchButtonsDiv = document.getElementById('matchButtons');
+      matchButtonsDiv.innerHTML = matches
+        .filter(match => match.visible)
+        .map((match, index) => `
+          <button onclick="showMatchDetails(${index})">${match.name}</button>
+        `).join('');
+    }
+
+    function showMatchDetails(index) {
+      const match = data.matches[index];
+      const matchDetailsDiv = document.getElementById('matchDetails');
+      if (match.result) {
+        matchDetailsDiv.innerHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th>Position</th>
+                <th>Team Name</th>
+                <th>Total Kills</th>
+                <th>Total Points</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${Object.entries(match.result.positions).map(([teamName, position]) => {
+                const team = data.teams.find(t => t.name === teamName);
+                return `
+                  <tr>
+                    <td>${position}</td>
+                    <td>${teamName}</td>
+                    <td>${team.kills}</td>
+                    <td>${team.totalPoints}</td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        `;
+      } else {
+        matchDetailsDiv.innerHTML = '<div>Match not yet ended</div>';
+      }
     }
 
     fetchData();
