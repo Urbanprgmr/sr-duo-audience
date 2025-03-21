@@ -27,16 +27,10 @@
       color: #ffcc00;
       text-shadow: 2px 2px 4px #000;
     }
-    .teams, .matches, .rules, .announcements {
+    .leaderboard, .matches, .rules, .announcements {
       margin-top: 20px;
     }
-    .team, .match, .rule, .announcement {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 5px;
-    }
-    table {
+    .leaderboard table, .matches table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 10px;
@@ -49,13 +43,35 @@
     th {
       background: rgba(255, 255, 255, 0.2);
     }
+    .match, .announcement {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Battle Royale Tournament - Audience View</h1>
-    <div class="teams" id="teams"></div>
-    <div class="matches" id="matches"></div>
+    <div class="leaderboard" id="leaderboard">
+      <h2>Leaderboard</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Position</th>
+            <th>Team</th>
+            <th>Kills</th>
+            <th>Points</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboardBody"></tbody>
+      </table>
+    </div>
+    <div class="matches" id="matches">
+      <h2>Matches</h2>
+      <div id="matchesList"></div>
+    </div>
     <div class="rules" id="rulesSection">
       <h2>Tournament Rules</h2>
       <div id="rulesDisplay"></div>
@@ -73,10 +89,10 @@
       teams: [],
       matches: [],
       rules: { content: '', visible: true },
-      pointsPerKill: 10,
-      pointsPerPosition: [100, 80, 60, 40, 20],
+      pointsPerKill: 4,
+      pointsPerPosition: [8, 6, 4, 2, 0],
       announcements: [],
-      playerLeaderboardVisible: true
+      playerLeaderboardVisible: false
     };
 
     // Fetch data from JSON bin
@@ -95,46 +111,25 @@
       }
     }
 
-    // Render all sections
-    function renderAll() {
-      renderTeams();
-      renderMatches();
-      renderAnnouncements();
-      renderRules();
-    }
-
-    // Render teams
-    function renderTeams() {
-      const teamsDiv = document.getElementById('teams');
-      teamsDiv.innerHTML = data.teams.map(team => `
-        <div class="team">
-          <strong>${team.name}</strong>
-          <table>
-            <thead>
-              <tr>
-                <th>Player</th>
-                <th>Kills</th>
-                <th>Total Points</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${team.players.map(player => `
-                <tr>
-                  <td>${player}</td>
-                  <td>${team.kills || 0}</td>
-                  <td>${team.totalPoints || 0}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-      `).join('');
+    // Render leaderboard
+    function renderLeaderboard() {
+      const leaderboardBody = document.getElementById('leaderboardBody');
+      leaderboardBody.innerHTML = data.teams
+        .sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0)) // Sort by totalPoints
+        .map((team, index) => `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${team.name}</td>
+            <td>${team.kills || 0}</td>
+            <td>${team.totalPoints || 0}</td>
+          </tr>
+        `).join('');
     }
 
     // Render matches
     function renderMatches() {
-      const matchesDiv = document.getElementById('matches');
-      matchesDiv.innerHTML = data.matches
+      const matchesList = document.getElementById('matchesList');
+      matchesList.innerHTML = data.matches
         .filter(match => match.visible)
         .map(match => `
           <div class="match">
@@ -186,6 +181,14 @@
       } else {
         rulesDisplay.innerHTML = '';
       }
+    }
+
+    // Render all sections
+    function renderAll() {
+      renderLeaderboard();
+      renderMatches();
+      renderAnnouncements();
+      renderRules();
     }
 
     // Initialize the app and fetch data every 10 seconds
