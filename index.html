@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Battle Royale Tournament - Audience View</title>
+  <title>SR In-House BR Duo Tournament</title>
   <style>
     body {
       font-family: 'Arial', sans-serif;
-      background: url('https://res.cloudinary.com/dwe3nze5h/image/upload/v1741881741/IMG_0293_lniyia.jpg') no-repeat center center fixed;
+      background: url('https://res.cloudinary.com/dwe3nze5h/image/upload/v1742322801/IMG_0337_gqkxvs.jpg') no-repeat center center fixed;
       background-size: cover;
       color: #fff;
       margin: 0;
@@ -53,7 +53,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>Battle Royale Tournament - Audience View</h1>
+    <h1>SR In-House BR Duo Tournament</h1>
     <div class="leaderboard" id="leaderboard">
       <h2>Leaderboard</h2>
       <table>
@@ -61,7 +61,7 @@
           <tr>
             <th>Position</th>
             <th>Team</th>
-            <th>Players</th>
+            <th>Players</th> <!-- Added Players column -->
             <th>Kills</th>
             <th>Points</th>
           </tr>
@@ -115,7 +115,8 @@
     // Render leaderboard
     function renderLeaderboard() {
       const leaderboardBody = document.getElementById('leaderboardBody');
-      leaderboardBody.innerHTML = data.te.sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0)) // Sort by totalPoints
+      leaderboardBody.innerHTML = data.teams
+        .sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0)) // Sort by totalPoints
         .map((team, index) => `
           <tr>
             <td>${index + 1}</td>
@@ -142,10 +143,10 @@
                 <thead>
                   <tr>
                     <th>Team</th>
-                    <th>Players</th>
+                    <th>Players</th> <!-- Added Players column -->
                     <th>Position</th>
                     <th>Kills</th>
-                    <th>Total Points</th>
+                    <th>Total Points</th> <!-- Added Total Points column -->
                   </tr>
                 </thead>
                 <tbody>
