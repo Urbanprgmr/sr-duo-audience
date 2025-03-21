@@ -3,12 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tournament Updates</title>
+  <title>Battle Royale Tournament - Audience View</title>
   <style>
-    /* Audience App CSS Styles */
     body {
       font-family: 'Arial', sans-serif;
-      background: url('https://res.cloudinary.com/dwe3nze5h/image/upload/v1742322801/IMG_0337_gqkxvs.jpg') no-repeat center center fixed;
+      background: url('https://res.cloudinary.com/dwe3nze5h/image/upload/v1741881741/IMG_0293_lniyia.jpg') no-repeat center center fixed;
       background-size: cover;
       color: #fff;
       margin: 0;
@@ -28,17 +27,14 @@
       color: #ffcc00;
       text-shadow: 2px 2px 4px #000;
     }
-    .leaderboard, .matches, .player-leaderboard, .announcements, .rules, .teams {
+    .teams, .matches, .rules, .announcements {
       margin-top: 20px;
     }
-    .team, .match, .player, .announcement, .rule {
+    .team, .match, .rule, .announcement {
       background: rgba(255, 255, 255, 0.1);
       padding: 10px;
       margin: 10px 0;
       border-radius: 5px;
-    }
-    .team strong, .player strong {
-      color: #ffcc00;
     }
     table {
       width: 100%;
@@ -53,206 +49,148 @@
     th {
       background: rgba(255, 255, 255, 0.2);
     }
-    .toggle-buttons {
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    .toggle-buttons button {
-      margin: 5px;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 25px;
-      background: linear-gradient(45deg, #ff5722, #ff9800);
-      color: white;
-      font-size: 1rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    }
-    .toggle-buttons button:hover {
-      background: linear-gradient(45deg, #e64a19, #f57c00);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
-    }
-    .toggle-buttons button:active {
-      transform: translateY(0);
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    }
-    .toggle-buttons button.active {
-      background: linear-gradient(45deg, #4CAF50, #8BC34A);
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    }
-    .hidden {
-      display: none;
-    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Tournament Updates</h1>
-    <div class="toggle-buttons">
-      <button onclick="toggleSection('rules')">
-        <span class="icon">📜</span> Rules
-      </button>
-      <button onclick="toggleSection('announcements')">
-        <span class="icon">📢</span> Announcements
-      </button>
-      <button onclick="toggleSection('teams')">
-        <span class="icon">👥</span> View Teams
-      </button>
-    </div>
-    <div class="rules hidden" id="rulesSection">
+    <h1>Battle Royale Tournament - Audience View</h1>
+    <div class="teams" id="teams"></div>
+    <div class="matches" id="matches"></div>
+    <div class="rules" id="rulesSection">
       <h2>Tournament Rules</h2>
       <div id="rulesDisplay"></div>
     </div>
-    <div class="announcements hidden" id="announcementsSection">
+    <div class="announcements" id="announcementsSection">
       <h2>Announcements</h2>
       <div id="announcementsList"></div>
-    </div>
-    <div class="teams hidden" id="teamsSection">
-      <h2>Registered Teams</h2>
-      <div id="teamsList"></div>
-    </div>
-    <div class="leaderboard">
-      <h2>Total Points Leaderboard</h2>
-      <div id="totalPointsLeaderboard"></div>
-    </div>
-    <div class="player-leaderboard hidden" id="playerLeaderboardSection">
-      <h2>Player Leaderboard</h2>
-      <div id="playerLeaderboard"></div>
-    </div>
-    <div class="matches">
-      <h2>Match Details</h2>
-      <div id="matchButtons"></div>
-      <div id="matchDetails"></div>
     </div>
   </div>
   <script>
     const JSONBIN_API_KEY = '$2a$10$dQjqnLB2i7wOWKDOwzJ0UuOqSwzQWUJSBBRrbHgz4aVkml7rG89wK'; // Replace with your JSON bin API key
-const JSONBIN_BIN_ID = '67d385168561e97a50eb8dbb'; // Replace with your JSON bin ID
+    const JSONBIN_BIN_ID = '67d385168561e97a50eb8dbb'; // Replace with your JSON bin ID
 
-let data = {
-  teams: [],
-  matches: [],
-  rules: { content: '', visible: true },
-  pointsPerKill: 10,
-  pointsPerPosition: [100, 80, 60, 40, 20],
-  announcements: [],
-  playerLeaderboardVisible: true
-};
+    let data = {
+      teams: [],
+      matches: [],
+      rules: { content: '', visible: true },
+      pointsPerKill: 10,
+      pointsPerPosition: [100, 80, 60, 40, 20],
+      announcements: [],
+      playerLeaderboardVisible: true
+    };
 
-// Fetch data from JSON bin
-async function fetchData() {
-  try {
-    const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
-      headers: { 'X-Master-Key': JSONBIN_API_KEY }
-    });
-    const json = await response.json();
-    if (json.record) {
-      data = json.record;
-      renderAll();
+    // Fetch data from JSON bin
+    async function fetchData() {
+      try {
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
+          headers: { 'X-Master-Key': JSONBIN_API_KEY }
+        });
+        const json = await response.json();
+        if (json.record) {
+          data = json.record;
+          renderAll();
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
     }
-  } catch (error) {
-    console.error("Error fetching data:", error);
-  }
-}
 
-// Render all sections
-function renderAll() {
-  renderTeams();
-  renderMatches();
-  renderAnnouncements();
-  renderRules();
-}
+    // Render all sections
+    function renderAll() {
+      renderTeams();
+      renderMatches();
+      renderAnnouncements();
+      renderRules();
+    }
 
-// Render teams
-function renderTeams() {
-  const teamsDiv = document.getElementById('teams');
-  teamsDiv.innerHTML = data.teams.map(team => `
-    <div class="team">
-      <strong>${team.name}</strong>
-      <table>
-        <thead>
-          <tr>
-            <th>Player</th>
-            <th>Kills</th>
-            <th>Total Points</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${team.players.map(player => `
-            <tr>
-              <td>${player}</td>
-              <td>${team.kills || 0}</td>
-              <td>${team.totalPoints || 0}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-    </div>
-  `).join('');
-}
-
-// Render matches
-function renderMatches() {
-  const matchesDiv = document.getElementById('matches');
-  matchesDiv.innerHTML = data.matches
-    .filter(match => match.visible)
-    .map(match => `
-      <div class="match">
-        <strong>Match Name:</strong> ${match.name}<br>
-        <strong>Teams:</strong> ${match.teams.join(', ')}<br>
-        <strong>Time:</strong> ${new Date(match.time).toLocaleString()}
-        ${match.result ? `
+    // Render teams
+    function renderTeams() {
+      const teamsDiv = document.getElementById('teams');
+      teamsDiv.innerHTML = data.teams.map(team => `
+        <div class="team">
+          <strong>${team.name}</strong>
           <table>
             <thead>
               <tr>
-                <th>Team</th>
-                <th>Position</th>
+                <th>Player</th>
                 <th>Kills</th>
+                <th>Total Points</th>
               </tr>
             </thead>
             <tbody>
-              ${Object.entries(match.result.positions).map(([teamName, position]) => `
+              ${team.players.map(player => `
                 <tr>
-                  <td>${teamName}</td>
-                  <td>${position || 0}</td>
-                  <td>${match.result.kills[teamName] || 0}</td>
+                  <td>${player}</td>
+                  <td>${team.kills || 0}</td>
+                  <td>${team.totalPoints || 0}</td>
                 </tr>
               `).join('')}
             </tbody>
           </table>
-        ` : '<div>Match not yet ended</div>'}
-      </div>
-    `).join('');
-}
+        </div>
+      `).join('');
+    }
 
-// Render announcements
-function renderAnnouncements() {
-  const announcementsList = document.getElementById('announcementsList');
-  announcementsList.innerHTML = data.announcements
-    .filter(announcement => announcement.visible)
-    .map(announcement => `
-      <div class="announcement">
-        <strong>${new Date(announcement.timestamp).toLocaleString()}</strong><br>
-        ${announcement.message}
-      </div>
-    `).join('');
-}
+    // Render matches
+    function renderMatches() {
+      const matchesDiv = document.getElementById('matches');
+      matchesDiv.innerHTML = data.matches
+        .filter(match => match.visible)
+        .map(match => `
+          <div class="match">
+            <strong>Match Name:</strong> ${match.name}<br>
+            <strong>Teams:</strong> ${match.teams.join(', ')}<br>
+            <strong>Time:</strong> ${new Date(match.time).toLocaleString()}
+            ${match.result ? `
+              <table>
+                <thead>
+                  <tr>
+                    <th>Team</th>
+                    <th>Position</th>
+                    <th>Kills</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${Object.entries(match.result.positions).map(([teamName, position]) => `
+                    <tr>
+                      <td>${teamName}</td>
+                      <td>${position || 0}</td>
+                      <td>${match.result.kills[teamName] || 0}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            ` : '<div>Match not yet ended</div>'}
+          </div>
+        `).join('');
+    }
 
-// Render rules
-function renderRules() {
-  const rulesDisplay = document.getElementById('rulesDisplay');
-  if (data.rules.visible) {
-    rulesDisplay.innerHTML = `<div class="rule">${data.rules.content}</div>`;
-  } else {
-    rulesDisplay.innerHTML = '';
-  }
-}
+    // Render announcements
+    function renderAnnouncements() {
+      const announcementsList = document.getElementById('announcementsList');
+      announcementsList.innerHTML = data.announcements
+        .filter(announcement => announcement.visible)
+        .map(announcement => `
+          <div class="announcement">
+            <strong>${new Date(announcement.timestamp).toLocaleString()}</strong><br>
+            ${announcement.message}
+          </div>
+        `).join('');
+    }
 
-// Initialize the app
-fetchData();
+    // Render rules
+    function renderRules() {
+      const rulesDisplay = document.getElementById('rulesDisplay');
+      if (data.rules.visible) {
+        rulesDisplay.innerHTML = `<div class="rule">${data.rules.content}</div>`;
+      } else {
+        rulesDisplay.innerHTML = '';
+      }
+    }
+
+    // Initialize the app and fetch data every 10 seconds
+    fetchData();
+    setInterval(fetchData, 10000); // Refresh data every 10 seconds
   </script>
 </body>
 </html>
