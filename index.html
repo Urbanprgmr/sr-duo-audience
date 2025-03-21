@@ -61,7 +61,7 @@
           <tr>
             <th>Position</th>
             <th>Team</th>
-            <th>Players</th> <!-- Added Players column -->
+            <th>Players</th>
             <th>Kills</th>
             <th>Points</th>
           </tr>
@@ -112,6 +112,13 @@
       }
     }
 
+    // Calculate total points for a match
+    function calculateMatchPoints(position, kills, pointsPerKill, pointsPerPosition) {
+      const positionPoints = pointsPerPosition[position - 1] || 0; // Get points for position
+      const killPoints = kills * pointsPerKill; // Calculate points for kills
+      return positionPoints + killPoints; // Total points
+    }
+
     // Render leaderboard
     function renderLeaderboard() {
       const leaderboardBody = document.getElementById('leaderboardBody');
@@ -121,7 +128,7 @@
           <tr>
             <td>${index + 1}</td>
             <td>${team.name}</td>
-            <td>${team.players.join(', ')}</td> <!-- Display player names -->
+            <td>${team.players.join(', ')}</td>
             <td>${team.kills || 0}</td>
             <td>${team.totalPoints || 0}</td>
           </tr>
@@ -143,22 +150,29 @@
                 <thead>
                   <tr>
                     <th>Team</th>
-                    <th>Players</th> <!-- Added Players column -->
+                    <th>Players</th>
                     <th>Position</th>
                     <th>Kills</th>
-                    <th>Total Points</th> <!-- Added Total Points column -->
+                    <th>Total Points</th>
                   </tr>
                 </thead>
                 <tbody>
                   ${Object.entries(match.result.positions).map(([teamName, position]) => {
                     const team = data.teams.find(t => t.name === teamName);
+                    const kills = match.result.kills[teamName] || 0;
+                    const totalPoints = calculateMatchPoints(
+                      position,
+                      kills,
+                      data.pointsPerKill,
+                      data.pointsPerPosition
+                    );
                     return `
                       <tr>
                         <td>${teamName}</td>
-                        <td>${team.players.join(', ')}</td> <!-- Display player names -->
+                        <td>${team.players.join(', ')}</td>
                         <td>${position || 0}</td>
-                        <td>${match.result.kills[teamName] || 0}</td>
-                        <td>${match.result.totalPoints[teamName] || 0}</td> <!-- Display total points -->
+                        <td>${kills}</td>
+                        <td>${totalPoints}</td>
                       </tr>
                     `;
                   }).join('')}
