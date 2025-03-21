@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SR In-House BR Duo Tournament</title>
+  <title>Battle Royale Tournament - Audience View</title>
   <style>
     body {
       font-family: 'Arial', sans-serif;
-      background: url('https://res.cloudinary.com/dwe3nze5h/image/upload/v1742322801/IMG_0337_gqkxvs.jpg') no-repeat center center fixed;
+      background: url('https://res.cloudinary.com/dwe3nze5h/image/upload/v1741881741/IMG_0293_lniyia.jpg') no-repeat center center fixed;
       background-size: cover;
       color: #fff;
       margin: 0;
@@ -53,7 +53,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>SR In-House BR Duo Tournament</h1>
+    <h1>Battle Royale Tournament - Audience View</h1>
     <div class="leaderboard" id="leaderboard">
       <h2>Leaderboard</h2>
       <table>
@@ -61,6 +61,7 @@
           <tr>
             <th>Position</th>
             <th>Team</th>
+            <th>Players</th>
             <th>Kills</th>
             <th>Points</th>
           </tr>
@@ -114,12 +115,12 @@
     // Render leaderboard
     function renderLeaderboard() {
       const leaderboardBody = document.getElementById('leaderboardBody');
-      leaderboardBody.innerHTML = data.teams
-        .sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0)) // Sort by totalPoints
+      leaderboardBody.innerHTML = data.te.sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0)) // Sort by totalPoints
         .map((team, index) => `
           <tr>
             <td>${index + 1}</td>
             <td>${team.name}</td>
+            <td>${team.players.join(', ')}</td> <!-- Display player names -->
             <td>${team.kills || 0}</td>
             <td>${team.totalPoints || 0}</td>
           </tr>
@@ -141,18 +142,25 @@
                 <thead>
                   <tr>
                     <th>Team</th>
+                    <th>Players</th>
                     <th>Position</th>
                     <th>Kills</th>
+                    <th>Total Points</th>
                   </tr>
                 </thead>
                 <tbody>
-                  ${Object.entries(match.result.positions).map(([teamName, position]) => `
-                    <tr>
-                      <td>${teamName}</td>
-                      <td>${position || 0}</td>
-                      <td>${match.result.kills[teamName] || 0}</td>
-                    </tr>
-                  `).join('')}
+                  ${Object.entries(match.result.positions).map(([teamName, position]) => {
+                    const team = data.teams.find(t => t.name === teamName);
+                    return `
+                      <tr>
+                        <td>${teamName}</td>
+                        <td>${team.players.join(', ')}</td> <!-- Display player names -->
+                        <td>${position || 0}</td>
+                        <td>${match.result.kills[teamName] || 0}</td>
+                        <td>${match.result.totalPoints[teamName] || 0}</td> <!-- Display total points -->
+                      </tr>
+                    `;
+                  }).join('')}
                 </tbody>
               </table>
             ` : '<div>Match not yet ended</div>'}
