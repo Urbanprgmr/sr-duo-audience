@@ -105,11 +105,39 @@
         const json = await response.json();
         if (json.record) {
           data = json.record;
+          updateLeaderboard(); // Recalculate leaderboard points whenever data is fetched
           renderAll();
         }
       } catch (error) {
         console.error("Error fetching data:", error);
       }
+    }
+
+    // Recalculate leaderboard points based on all matches
+    function updateLeaderboard() {
+      // Reset totalPoints for all teams
+      data.teams.forEach(team => team.totalPoints = 0);
+
+      // Iterate through all matches and update totalPoints for each team
+      data.matches.forEach(match => {
+        if (match.result) {
+          Object.entries(match.result.positions).forEach(([teamName, position]) => {
+            const team = data.teams.find(t => t.name === teamName);
+            const kills = match.result.kills[teamName] || 0;
+            const matchPoints = calculateMatchPoints(
+              position,
+              kills,
+              data.pointsPerKill,
+              data.pointsPerPosition
+            );
+
+            // Update the team's totalPoints
+            if (team) {
+              team.totalPoints = (team.totalPoints || 0) + matchPoints;
+            }
+          });
+        }
+      });
     }
 
     // Calculate total points for a match
