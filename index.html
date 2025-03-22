@@ -115,10 +115,10 @@
 
     // Recalculate leaderboard points based on all matches
     function updateLeaderboard() {
-      // Reset totalPoints for all teams
+      // Initialize totalPoints for all teams to 0
       data.teams.forEach(team => team.totalPoints = 0);
 
-      // Iterate through all matches and update totalPoints for each team
+      // Iterate through all matches and accumulate points for each team
       data.matches.forEach(match => {
         if (match.result) {
           Object.entries(match.result.positions).forEach(([teamName, position]) => {
@@ -131,7 +131,7 @@
               data.pointsPerPosition
             );
 
-            // Update the team's totalPoints
+            // Accumulate points for the team
             if (team) {
               team.totalPoints = (team.totalPoints || 0) + matchPoints;
             }
